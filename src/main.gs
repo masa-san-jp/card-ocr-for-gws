@@ -84,7 +84,8 @@ function setup() {
  * Run this function once per contact via manual trigger or Apps Script scheduler.
  * Processes exactly ONE row per execution to prevent accidental bulk sends.
  *
- * Before running, ensure CONFIG.GREETING_EMAIL_MODE, SUBJECT, and BODY are set.
+ * Before running, ensure CONFIG.GREETING_EMAIL_MODE,
+ * CONFIG.GREETING_EMAIL_SUBJECT, and CONFIG.GREETING_EMAIL_BODY are set.
  *
  * To skip a contact without sending, type 'スキップ' in the
  * 「メール送信状態」column (column J) of that row in the sheet.
