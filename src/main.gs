@@ -53,17 +53,42 @@ function processNewCards() {
 
 /**
  * Setup function to initialize the sheet headers (optional helper).
+ * Safe to re-run: adds the メール送信状態 column if it does not yet exist.
  */
 function setup() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName(CONFIG.SHEET_NAME);
+
   if (!sheet) {
     sheet = ss.insertSheet(CONFIG.SHEET_NAME);
-    var headers = ['Timestamp', 'Image Data (Ref)', 'Name', 'Company', 'Job Title', 'Email', 'Phone', 'Address', 'Website'];
-    sheet.appendRow(headers);
-    sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
-    Logger.log('Sheet ' + CONFIG.SHEET_NAME + ' created with headers.');
+    sheet.appendRow(SheetService.HEADERS);
+    sheet.getRange(1, 1, 1, SheetService.HEADERS.length).setFontWeight('bold');
+    Logger.log('Sheet "' + CONFIG.SHEET_NAME + '" created with headers.');
   } else {
-    Logger.log('Sheet ' + CONFIG.SHEET_NAME + ' already exists.');
+    // Add メール送信状態 column if the sheet predates this feature
+    var lastCol = sheet.getLastColumn();
+    if (lastCol < SheetService.HEADERS.length) {
+      for (var c = lastCol + 1; c <= SheetService.HEADERS.length; c++) {
+        sheet.getRange(1, c).setValue(SheetService.HEADERS[c - 1]).setFontWeight('bold');
+      }
+      Logger.log('Added missing column(s) to "' + CONFIG.SHEET_NAME + '".');
+    } else {
+      Logger.log('Sheet "' + CONFIG.SHEET_NAME + '" already up to date.');
+    }
   }
+}
+
+/**
+ * Sends or drafts a greeting email for the next unprocessed contact.
+ *
+ * Run this function once per contact via manual trigger or Apps Script scheduler.
+ * Processes exactly ONE row per execution to prevent accidental bulk sends.
+ *
+ * Before running, ensure CONFIG.GREETING_EMAIL_MODE, SUBJECT, and BODY are set.
+ *
+ * To skip a contact without sending, type 'スキップ' in the
+ * 「メール送信状態」column (column J) of that row in the sheet.
+ */
+function processNextGreetingEmail() {
+  EmailService.processNextGreetingEmail();
 }
