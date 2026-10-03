@@ -59,3 +59,24 @@ Apps Scriptエディタで以下のファイルを作成し、提供されたコ
 7.  保存します。
 
 これで、フォルダに画像を入れると5分以内に自動的に処理されるようになります。
+
+
+## 辞書的定義と用例
+
+card-ocr-for-gws は、名刺画像から連絡先を読み取り、Google Workspace上の台帳へ転記する Google Apps Script です。「交換した名刺を入力フォルダへ置き、名刺OCRで連絡先一覧を作る」という用途を想定します。OCR は画像からの項目抽出、GWS はここで使う Drive・Sheets などの環境を指します。
+
+## 思想的背景
+
+画像の保管、項目抽出、台帳への記録をつなぎ、連絡先の手入力を減らす構成です。[main.gs](src/main.gs) は抽出結果を保存した後で原本を処理済みへ移し、画像参照も残します。読み取り結果は人が原本と照合する前提で利用してください。
+
+## 技術的背景
+
+[src/main.gs](src/main.gs) の processNewCards が画像を読み、GeminiService で抽出し、SheetService で保存します。対象画像形式は JPEG / PNG / WebP です。上記セットアップに挙げたファイルの正本は [src/](src/) にあります。名刺画像と連絡先情報を扱うため、Gemini APIへの送信と保存先の共有範囲を導入前に確認してください。
+
+## 歴史的背景
+
+[2026年2月14日の初期実装](https://github.com/masa-san-jp/card-ocr-for-gws/commit/4a6bf0f6c5868445433fa83ae12c1a04283da00c) で GAS / Gemini の名刺スキャンを追加し、[2026年4月のPR #1](https://github.com/masa-san-jp/card-ocr-for-gws/pull/1) で挨拶メール機能とステップメールの仕様を追加しています。
+
+## 展開とメール機能の境界
+
+[src/EmailService.gs](src/EmailService.gs) と processNextGreetingEmail は、未処理の連絡先を1回につき1行扱います。設定が send の場合は実送信し、それ以外は下書きを作成します。OCRの試験とメール送信の試験は分け、宛先・文面・モードを確認してから利用してください。拡張の設計は [ステップメール仕様](docs/step-email-system-spec.md) を参照し、仕様にある計画と実装済みの処理を区別してください。
